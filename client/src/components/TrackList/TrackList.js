@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './TrackList.css';
 import Track from '../Track/Track.js'
 
-export default function TrackList(props) {
+export default function TrackList({ tracks, onAdd, onRemove, isRemoval }) {
   
-  const tracks = props.tracks.map(track => (
-    <Track
-      track={track}
-      key={track.id}
-      onAdd={props.onAdd}
-      onRemove={props.onRemove}
-      isRemoval={props.isRemoval}
-    />
-  ));
-
   return (
     <div className="TrackList">
-      <ul>{tracks}</ul>
+      <ul>
+        {tracks && tracks.map(track => (
+          <Track
+            track={track}
+            key={track.id}
+            onAdd={onAdd}
+            onRemove={onRemove}
+            isRemoval={isRemoval}
+          />
+        ))}
+      </ul>
     </div>
   );
 };

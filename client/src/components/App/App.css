@@ -1,10 +1,20 @@
 .App {
   text-align: center;
+  height: 100%;
+  padding: 0 17% 10% 17%;
+  background-image: url('./background_photo_desktop.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 500;
+  color: #fff;
 }
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+  animation: App-logo-spin infinite 20s linear;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -14,14 +24,50 @@
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
   justify-content: center;
+  align-items: center;
+  height: 20%;
+  width: 100%;
+  margin: 0 auto;
+  background-color: #282c34;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.App-header-title {
+  margin: 0 auto;
+  padding: .77rem 0;
+  background-color: #010c3f;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.88rem;
+  color: #fff;
+}
+
+.highlight {
+  color: #6c41ec;
+}
+
+.auth-button {
+  cursor: pointer;
+  width: 6rem;
+  padding: .77rem 0;
+  border-radius: 54px;
+  border-width: 0px;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: 2%;
+  background-color: #6c41ec;
+  text-align: center;
+  font-size: .83rem;
+  transition: background-color .25s;
+  color: #fff;
+  font-weight: 500;
+}
+
+.auth-button:hover {
+  background-color: rgba(108, 65, 233, .7);
 }
 
 .App-link {
@@ -37,45 +83,16 @@
   }
 }
 
-
 body,
 html,
 #root {
   height: 100%;
-}
-
-html {
   font-size: 18px;
-}
-
-h1 {
-  padding: .77rem 0;
-  background-color: #010c3f;
-  text-align: center;
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.88rem;
-  color: #fff;
-}
-
-h1 .highlight {
-  color: #6c41ec;
 }
 
 h2 {
   font-family: 'Poppins', sans-serif;
   font-size: 1.55rem;
-}
-
-.App {
-  height: 100%;
-  padding: 0 17% 10% 17%;
-  background-image: url('./background_photo_desktop.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  font-family: 'Work Sans', sans-serif;
-  font-weight: 500;
-  color: #fff;
 }
 
 .App-playlist {

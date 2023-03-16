@@ -2,12 +2,12 @@ import React from 'react';
 import TrackList from '../TrackList/TrackList.js';
 import './SearchResults.css'
 
-export default function SearchResults() {
+export default function SearchResults({ searchResults, onAdd, onRemove }) {
     
   return (
     <div className="SearchResults">
       <h2>Results</h2>
-      <TrackList tracks={this.props.searchResults} onAdd={this.props.onAdd} isRemoval={false} /> 
+      <TrackList tracks={searchResults} onAdd={onAdd} onRemove={onRemove} isRemoval={false} /> 
     </div>
   );
 };

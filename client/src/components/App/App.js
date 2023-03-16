@@ -3,25 +3,23 @@ import React, { useState, useEffect } from 'react';
 import SearchBar from '../SearchBar/SearchBar.js'
 import SearchResults from '../SearchResults/SearchResults.js';
 import Playlist from '../Playlist/Playlist.js';
-import axios from 'axios'
+import axios from 'axios';
+import { SERVER_URL } from "../../config/config.js";
 
 function App() {
-
-  const CLIENT_ID = "b900ca51fa2741cca79701385f8c471f"
-  const REDIRECT_URI = "http://localhost:3000"
-  const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
-  const RESPONSE_TYPE = "token"
-
+  
+  const [searchResults, setSearchResults] = useState([]);
+  const [playlistName, setPlaylistName] = useState('');
+  const [playlistTracks, setPlaylistTracks] = useState([]);
   const [token, setToken] = useState("")
   const [searchKey, setSearchKey] = useState("")
-  const [artists, setArtists] = useState([])
 
   useEffect(() => {
-    const hash = Window.location.hashlet
+    const hash = window.location.hash
     let token = window.localStorage.getItem("token")
 
     if (!token && hash) {
-      const token = hash.substring(1).split({separator: "&"}).find(elem => elem.startsWith("access_token")).split({separator: "="})[1]
+      token = hash.substring(1).split("&").find(elem => elem.startsWith("access_token")).split("=")[1]
   
       window.location.hash = ""
       window.localStorage.setItem("token", token)
@@ -29,14 +27,6 @@ function App() {
 
     setToken(token)
   }, [])
-
-  
-  
-  const [searchResults, setSearchResults] = useState([{name: 'By the Way', artist: 'Red Hot Chili Peppers', album: 'By the Way', id: 1}]);
-  const [playlistName, setPlaylistName] = useState('Milans favorite songs');
-  const [playlistTracks, setPlaylistTracks] = useState([{name: 'Hurricane', artist: 'Bob Dylan', album: 'Hurricane Album', id: 2}, {name: 'Gangstas Paradise', artist: 'Coolio', album: 'Gangstas Paradise', id: 3}]);
-  
-
   
   function addTrack(track) {
     setPlaylistTracks(prevTracks => [...prevTracks, track]);
@@ -50,69 +40,102 @@ function App() {
     setPlaylistName(name);
   }
 
-  function savePlaylist() {
-    // save playlist logic
-    const trackURIs = playlistTracks;
+  async function getUserId() {
+    const response = await axios.get('https://api.spotify.com/v1/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.id;
   }
 
-  const searchArtists = async (e) => {
-    const {data} = await axios.get("http://api.spotify.com/v1/search", {
+  async function createPlaylist(userId, playlistName) {
+    const response = await axios.post(`https://api.spotify.com/v1/users/${userId}/playlists`, { name: playlistName }, {
       headers: {
-        Athorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('response', response)
+    return response.data.id;
+  }
+
+  async function addTracksToPlaylist(playlistId, trackUris) {
+    await axios.post(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { uris: trackUris }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+  }
+
+  function savePlaylist() {
+    const trackUris = playlistTracks.map(track => `spotify:track:${track.id}`);
+    getUserId().then(userId => {
+      createPlaylist(userId, playlistName).then(playlistId => {
+        addTracksToPlaylist(playlistId, trackUris).then(() => {
+          setPlaylistName('New Playlist');
+          setPlaylistTracks([]);
+        });
+      });
+    });
+  }
+
+  const searchSongs = async (e) => {
+    const { data } = await axios.get(`${SERVER_URL}/search`, {
+      headers: {
+        Authorization: `Bearer ${token}`
       },
       params: {
         q: searchKey,
-        type: "artist"
+        type: "track"
       }
     })
-
-    setArtists(data.artists.items)
+    setSearchResults(data.tracks.items)
+    console.log(searchResults)
   }
 
-  const renderArtists = () => {
-    return artists.map(artist => (
-      <div key={artist.id}>
-        {artist.images.length ? <img src={artist.images[0].url} alt="" /> : <div>No Image</div>}
-        {artist.name}
-      </div>
-    ))
+  const login = async () => {
+    window.location.href = `${SERVER_URL}/login`;
   }
 
   const logout = () => {
     setToken("")
-    window.localStorage.removeitem("token")
+    window.localStorage.removeItem("token")
   }
 
   return (
     <div>
-      <h1>Ja<span class="highlight">mmm</span>ing</h1>
-        {!token ?
-          <a href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}>Login</a>
-        : <button>Logout</button>}
+      <div className="App-header">
+        <h1 className="App-header-title">Ja<span className="highlight">mmm</span>ing</h1>
+        {!token ? (
+          <button className="auth-button" onClick={login}>
+            LOGIN
+          </button>
+        ) : (
+          <button className="auth-button" onClick={logout}>
+            LOGOUT
+          </button>
+        )}
+      </div>       
 
-        {token ? 
-          <form onSubmit={searchArtists}>
-            <input type="text" onhange={e => setSearchKey(e.target.value)} />
-            <button type={"submit"}>Search</button>
-          </form>
-          : <h2>Please login</h2>
-        }
-
-        <div className="App">
-          <SearchBar onSearch={searchArtists} />
-          <div className="App-playlist">
-            <SearchResults 
-              searchResult={searchResults} 
-              onAdd={addTrack}
-            />
-            <Playlist 
-              playlistName={playlistName} 
-              playlistTracks={playlistTracks} 
-              onRemove={removeTrack}
-              onNameChange={updatePlaylistName}
-            />
-          </div>
+      <div className="App">
+        <SearchBar onSearch={searchSongs} setSearchKey={setSearchKey} />
+        <div className="App-playlist">
+          <SearchResults 
+            searchResults={searchResults} 
+            onAdd={addTrack}
+            onRemove={removeTrack}
+          />
+          <Playlist 
+            playlistName={playlistName} 
+            playlistTracks={playlistTracks} 
+            onRemove={removeTrack}
+            onNameChange={updatePlaylistName}
+            onSave={savePlaylist}
+          />
         </div>
+      </div>
     </div>
   );
 };
